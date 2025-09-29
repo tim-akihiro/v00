@@ -1,42 +1,29 @@
 "use client"
-import { useState } from "react"
 
-/**
- * Kontaktformular zur Übermittlung von Nachrichten.
- *
- * Diese Komponente kapselt die Form‑Logik in einer `onSubmit`‑Funktion und
- * setzt Lade‑ und Erfolgzustände korrekt. Das Formular wird erst nach einem
- * erfolgreichen Submit geleert. Fehlerhafte oder duplizierte Codefragmente
- * aus der ursprünglichen Fassung wurden entfernt, um Syntaxfehler zu vermeiden.
- */
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+
 export default function Contact() {
   const [loading, setLoading] = useState(false)
-  const [ok, setOk] = useState<boolean | null>(null)
+  const [ok, setOk] = useState<null | boolean>(null)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoading(true)
-    setOk(null)
-
-    const fd = new FormData(e.currentTarget)
-    const payload = {
-      name: String(fd.get("name") || ""),
-      email: String(fd.get("email") || ""),
-      message: String(fd.get("message") || ""),
-    }
-
     try {
+      setLoading(true)
+      const fd = new FormData(e.currentTarget)
+      const payload = {
+        name: String(fd.get("name") || ""),
+        email: String(fd.get("email") || ""),
+        message: String(fd.get("message") || ""),
+      }
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-      const json = await res.json()
-      setOk(Boolean(json?.ok))
-      // Bei Erfolg Formular leeren
-      if (json?.ok) {
-        e.currentTarget.reset()
-      }
+      setOk(res.ok)
+      if (res.ok) e.currentTarget.reset()
     } catch {
       setOk(false)
     } finally {
@@ -45,42 +32,29 @@ export default function Contact() {
   }
 
   return (
-    <section id="kontakt" className="max-w-xl mx-auto p-6">
-      <h2 className="text-2xl font-bold">Kontakt</h2>
-      <form onSubmit={onSubmit} className="mt-4 space-y-4">
-        <input
-          name="name"
-          type="text"
-          placeholder="Name"
-          required
-          className="w-full border p-3 rounded"
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="E‑Mail"
-          required
-          className="w-full border p-3 rounded"
-        />
+    <form onSubmit={onSubmit} className="mt-4 space-y-4">
+      <div>
+        <label className="block text-sm mb-1">Name</label>
+        <Input name="name" type="text" placeholder="John Doe" required />
+      </div>
+      <div>
+        <label className="block text-sm mb-1">E-Mail</label>
+        <Input name="email" type="email" placeholder="john@example.com" required />
+      </div>
+      <div>
+        <label className="block text-sm mb-1">Nachricht</label>
         <textarea
           name="message"
-          placeholder="Nachricht"
+          placeholder="Ihre Nachricht…"
           required
-          rows={5}
-          className="w-full border p-3 rounded"
+          className="min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full border p-3 rounded font-medium"
-        >
-          {loading ? "Senden…" : "Senden"}
-        </button>
-        {ok === true && <p className="text-green-600">Danke. Wir melden uns.</p>}
-        {ok === false && (
-          <p className="text-red-600">Fehler beim Senden. Bitte später erneut.</p>
-        )}
-      </form>
-    </section>
+      </div>
+      <button type="submit" disabled={loading} className="rounded-md border px-4 py-2">
+        {loading ? "Senden…" : "Senden"}
+      </button>
+      {ok === true && <p className="text-green-600 text-sm">Danke. Wir melden uns.</p>}
+      {ok === false && <p className="text-red-600 text-sm">Senden fehlgeschlagen.</p>}
+    </form>
   )
 }
