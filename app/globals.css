@@ -24,3 +24,8 @@
 }
 
 html, body, #__next { min-height: 100%; }
+/* Hard reset gegen verblasste/verschobene Hero-Styles */
+html, body { opacity: 1 !important; transform: none !important; }
+body { color: #0a0a0a; }
+.dark body { color: #fafafa; }
+main { margin: 0 auto; }
