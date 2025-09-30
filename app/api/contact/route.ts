@@ -1,19 +1,15 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json()
-    if (!data?.name || !data?.email || !data?.message) {
-      return NextResponse.json({ ok: false, error: "invalid" }, { status: 400 })
-    }
-    const r = await fetch(process.env.N8N_CONTACT_WEBHOOK as string, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, source: "website", ts: new Date().toISOString() }),
-    })
-    if (!r.ok) return NextResponse.json({ ok: false }, { status: 502 })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 400 })
+    const data = await req.json();
+    // TODO: hier n8n-Webhook aufrufen oder E-Mail versenden
+    // await fetch(process.env.N8N_WEBHOOK_URL!, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+
+    console.log("CONTACT_FORM", data); // vorerst ins Log
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("CONTACT_FORM_ERROR", err);
+    return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
   }
 }
